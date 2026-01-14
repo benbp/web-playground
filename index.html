@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Intermittent Fast</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1b1a19;
+        --muted: #6e6a64;
+        --paper: #fbf7f1;
+        --accent: #ed6a4d;
+        --accent-dark: #c7543f;
+        --accent-soft: #f6b9a7;
+        --leaf: #4f7b6a;
+        --card: rgba(255, 255, 255, 0.8);
+        --shadow: 0 24px 50px rgba(40, 33, 25, 0.15);
+        --radius: 22px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 20% 10%, #fff7ea 0%, transparent 55%),
+          radial-gradient(circle at 80% 20%, #fde9df 0%, transparent 50%),
+          radial-gradient(circle at 50% 90%, #f3f0ea 0%, transparent 65%),
+          linear-gradient(160deg, #f9f2e7 0%, #f6ede2 45%, #f7f4ee 100%);
+        padding: 24px 18px 40px;
+      }
+
+      .app {
+        max-width: 460px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 12px;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Charter", "Palatino", "Georgia", serif;
+        font-size: 26px;
+        letter-spacing: 0.5px;
+      }
+
+      .cycle-window {
+        text-align: right;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .timer {
+        display: grid;
+        gap: 8px;
+        text-align: center;
+      }
+
+      .timer .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--muted);
+      }
+
+      .timer .time {
+        font-family: "Iowan Old Style", "Charter", "Palatino", "Georgia", serif;
+        font-size: 42px;
+      }
+
+      .timer .sub {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .primary-action {
+        width: 100%;
+        border: none;
+        border-radius: 999px;
+        padding: 18px 24px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(140deg, var(--accent) 0%, var(--accent-dark) 100%);
+        box-shadow: 0 14px 28px rgba(237, 106, 77, 0.35);
+        cursor: pointer;
+      }
+
+      .primary-action:active {
+        transform: translateY(1px) scale(0.99);
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .secondary {
+        border: 1px solid rgba(27, 26, 25, 0.1);
+        border-radius: 14px;
+        padding: 12px;
+        background: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .secondary.success {
+        color: #2d6b45;
+        border-color: rgba(45, 107, 69, 0.25);
+      }
+
+      .secondary.fail {
+        color: #a13a2a;
+        border-color: rgba(161, 58, 42, 0.25);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        text-align: center;
+      }
+
+      .stat {
+        padding: 12px 6px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .stat .value {
+        font-family: "Iowan Old Style", "Charter", "Palatino", "Georgia", serif;
+        font-size: 22px;
+        font-weight: 600;
+      }
+
+      .stat .key {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+      }
+
+      .settings {
+        display: grid;
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      input[type="number"] {
+        border: 1px solid rgba(27, 26, 25, 0.1);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 16px;
+        background: #fff;
+      }
+
+      .history {
+        display: grid;
+        gap: 12px;
+      }
+
+      .history-item {
+        border-radius: 16px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.7);
+        display: grid;
+        gap: 4px;
+        border-left: 6px solid transparent;
+      }
+
+      .history-item.success {
+        border-left-color: #2d6b45;
+      }
+
+      .history-item.fail {
+        border-left-color: #a13a2a;
+      }
+
+      .history-item .title {
+        font-weight: 600;
+      }
+
+      .history-item .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .reset-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .reset-row button {
+        border: none;
+        background: none;
+        color: var(--leaf);
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      @media (min-width: 540px) {
+        body {
+          padding: 32px 28px 50px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div>
+          <h1>Intermittent Fast</h1>
+          <div class="cycle-window" id="scheduleLabel">16:8 schedule</div>
+        </div>
+        <div class="cycle-window" id="cycleWindow">Cycle not started</div>
+      </header>
+
+      <section class="card timer">
+        <div class="label" id="modeLabel">Eating</div>
+        <div class="time" id="timerValue">--:--:--</div>
+        <div class="sub" id="timerSub">Tap start to begin your next fast.</div>
+        <button class="primary-action" id="primaryAction">Start Fast</button>
+        <div class="action-row" id="resultRow" hidden>
+          <button class="secondary success" id="markSuccess">Mark Successful</button>
+          <button class="secondary fail" id="markFail">Mark Unsuccessful</button>
+        </div>
+      </section>
+
+      <section class="card stats">
+        <div class="stat">
+          <div class="value" id="statDone">0</div>
+          <div class="key">Done</div>
+        </div>
+        <div class="stat">
+          <div class="value" id="statRemaining">0</div>
+          <div class="key">Remaining</div>
+        </div>
+        <div class="stat">
+          <div class="value" id="statCycle">0</div>
+          <div class="key">Days Left</div>
+        </div>
+      </section>
+
+      <section class="card settings">
+        <div class="field">
+          <label for="cycleLength">Cycle length (days)</label>
+          <input type="number" id="cycleLength" min="1" step="1" />
+        </div>
+        <div class="field">
+          <label for="requiredPeriods">Fasts required per cycle</label>
+          <input type="number" id="requiredPeriods" min="1" step="1" />
+        </div>
+        <div class="field">
+          <label for="fastHours">Fasting duration (hours)</label>
+          <input type="number" id="fastHours" min="1" step="1" />
+        </div>
+        <div class="reset-row">
+          <span id="cycleStartLabel">Cycle start not set</span>
+          <button id="resetCycle">Start new cycle</button>
+        </div>
+      </section>
+
+      <section class="card history">
+        <div class="label">History</div>
+        <div id="historyList"></div>
+      </section>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "ifast.v1";
+      const $ = (id) => document.getElementById(id);
+
+      const state = loadState();
+      const els = {
+        scheduleLabel: $("scheduleLabel"),
+        cycleWindow: $("cycleWindow"),
+        modeLabel: $("modeLabel"),
+        timerValue: $("timerValue"),
+        timerSub: $("timerSub"),
+        primaryAction: $("primaryAction"),
+        resultRow: $("resultRow"),
+        markSuccess: $("markSuccess"),
+        markFail: $("markFail"),
+        statDone: $("statDone"),
+        statRemaining: $("statRemaining"),
+        statCycle: $("statCycle"),
+        cycleLength: $("cycleLength"),
+        requiredPeriods: $("requiredPeriods"),
+        fastHours: $("fastHours"),
+        cycleStartLabel: $("cycleStartLabel"),
+        resetCycle: $("resetCycle"),
+        historyList: $("historyList"),
+      };
+
+      function loadState() {
+        const fallback = {
+          settings: { cycleLengthDays: 14, requiredPerCycle: 6, fastHours: 16 },
+          cycleStart: null,
+          current: { mode: "eating", start: null, end: null },
+          pending: null,
+          history: [],
+        };
+        try {
+          const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          return { ...fallback, ...stored };
+        } catch (error) {
+          return fallback;
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function toMsHours(hours) {
+        return hours * 60 * 60 * 1000;
+      }
+
+      function formatDuration(ms) {
+        const total = Math.max(0, Math.floor(ms / 1000));
+        const hours = String(Math.floor(total / 3600)).padStart(2, "0");
+        const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+        const seconds = String(total % 60).padStart(2, "0");
+        return `${hours}:${minutes}:${seconds}`;
+      }
+
+      function formatDate(ms) {
+        const date = new Date(ms);
+        return date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      }
+
+      function eatingHours() {
+        return Math.max(1, 24 - Number(state.settings.fastHours || 16));
+      }
+
+      function cycleWindow() {
+        if (!state.cycleStart) return null;
+        const lengthMs = toMsHours(Number(state.settings.cycleLengthDays) * 24);
+        return { start: state.cycleStart, end: state.cycleStart + lengthMs };
+      }
+
+      function updateStats() {
+        const window = cycleWindow();
+        const now = Date.now();
+        let successCount = 0;
+        let daysLeft = Number(state.settings.cycleLengthDays);
+        if (window) {
+          successCount = state.history.filter((item) => {
+            return item.result === "success" && item.end >= window.start && item.end <= window.end;
+          }).length;
+          daysLeft = Math.max(0, Math.ceil((window.end - now) / toMsHours(24)));
+        }
+        const remaining = Math.max(0, Number(state.settings.requiredPerCycle) - successCount);
+        els.statDone.textContent = successCount;
+        els.statRemaining.textContent = remaining;
+        els.statCycle.textContent = daysLeft;
+      }
+
+      function updateCycleLabels() {
+        const schedule = `${state.settings.fastHours}:${eatingHours()}`;
+        els.scheduleLabel.textContent = `${schedule} schedule`;
+        const window = cycleWindow();
+        if (!window) {
+          els.cycleWindow.textContent = "Cycle not started";
+          els.cycleStartLabel.textContent = "Cycle start not set";
+          return;
+        }
+        els.cycleWindow.textContent = `${formatDate(window.start)} → ${formatDate(window.end)}`;
+        els.cycleStartLabel.textContent = `Started ${formatDate(window.start)}`;
+      }
+
+      function updateTimer() {
+        const now = Date.now();
+        if (state.pending) {
+          els.modeLabel.textContent = "Fast complete";
+          els.timerValue.textContent = formatDuration(state.pending.end - state.pending.start);
+          els.timerSub.textContent = "Mark the outcome of this fast.";
+          els.primaryAction.textContent = "Start Another Fast";
+          els.resultRow.hidden = false;
+          return;
+        }
+
+        const current = state.current || { mode: "eating", start: null, end: null };
+        if (current.mode === "fasting") {
+          const remaining = current.end - now;
+          els.modeLabel.textContent = "Fasting";
+          els.timerValue.textContent = formatDuration(remaining);
+          els.timerSub.textContent = remaining >= 0 ? "Time left in this fast." : "Fast target passed. End when ready.";
+          els.primaryAction.textContent = "End Fast";
+          els.resultRow.hidden = true;
+        } else {
+          const eatingEnd = current.end || (state.history[0]?.end ? state.history[0].end + toMsHours(eatingHours()) : null);
+          const remaining = eatingEnd ? eatingEnd - now : 0;
+          els.modeLabel.textContent = "Eating";
+          els.timerValue.textContent = eatingEnd ? formatDuration(remaining) : "--:--:--";
+          els.timerSub.textContent = eatingEnd ? "Time left in eating window." : "Tap start to begin your next fast.";
+          els.primaryAction.textContent = "Start Fast";
+          els.resultRow.hidden = true;
+        }
+      }
+
+      function updateHistory() {
+        els.historyList.innerHTML = "";
+        if (!state.history.length) {
+          els.historyList.innerHTML = "<div class='meta'>No completed fasts yet.</div>";
+          return;
+        }
+        state.history.slice().reverse().forEach((item) => {
+          const wrap = document.createElement("div");
+          wrap.className = `history-item ${item.result === "success" ? "success" : "fail"}`;
+          const durationHours = ((item.end - item.start) / toMsHours(1)).toFixed(1);
+          wrap.innerHTML = `
+            <div class="title">${item.result === "success" ? "Successful" : "Unsuccessful"} fast</div>
+            <div class="meta">${formatDate(item.start)} → ${formatDate(item.end)}</div>
+            <div class="meta">${durationHours}h fast · ${item.targetHours}:${24 - item.targetHours} schedule</div>
+          `;
+          els.historyList.appendChild(wrap);
+        });
+      }
+
+      function applySettings() {
+        state.settings.cycleLengthDays = Number(els.cycleLength.value) || 14;
+        state.settings.requiredPerCycle = Number(els.requiredPeriods.value) || 6;
+        state.settings.fastHours = Number(els.fastHours.value) || 16;
+        saveState();
+        updateCycleLabels();
+        updateStats();
+        updateTimer();
+        updateHistory();
+      }
+
+      function startFast() {
+        const now = Date.now();
+        if (!state.cycleStart) state.cycleStart = now;
+        state.pending = null;
+        state.current = {
+          mode: "fasting",
+          start: now,
+          end: now + toMsHours(state.settings.fastHours),
+        };
+        saveState();
+        updateCycleLabels();
+        updateTimer();
+      }
+
+      function endFast() {
+        if (!state.current || state.current.mode !== "fasting") return;
+        const now = Date.now();
+        state.pending = {
+          start: state.current.start,
+          end: now,
+          targetHours: Number(state.settings.fastHours),
+          result: "pending",
+        };
+        state.current = { mode: "eating", start: now, end: now + toMsHours(eatingHours()) };
+        saveState();
+        updateTimer();
+      }
+
+      function markResult(result) {
+        if (!state.pending) return;
+        state.pending.result = result;
+        state.history.push(state.pending);
+        state.pending = null;
+        state.current = { mode: "eating", start: Date.now(), end: Date.now() + toMsHours(eatingHours()) };
+        saveState();
+        updateStats();
+        updateHistory();
+        updateTimer();
+      }
+
+      function bindEvents() {
+        els.primaryAction.addEventListener("click", () => {
+          if (state.pending) return startFast();
+          if (state.current.mode === "fasting") return endFast();
+          return startFast();
+        });
+        els.markSuccess.addEventListener("click", () => markResult("success"));
+        els.markFail.addEventListener("click", () => markResult("fail"));
+        [els.cycleLength, els.requiredPeriods, els.fastHours].forEach((input) => {
+          input.addEventListener("change", applySettings);
+        });
+        els.resetCycle.addEventListener("click", () => {
+          state.cycleStart = Date.now();
+          saveState();
+          updateCycleLabels();
+          updateStats();
+        });
+      }
+
+      function hydrate() {
+        els.cycleLength.value = state.settings.cycleLengthDays;
+        els.requiredPeriods.value = state.settings.requiredPerCycle;
+        els.fastHours.value = state.settings.fastHours;
+        updateCycleLabels();
+        updateStats();
+        updateHistory();
+        updateTimer();
+      }
+
+      bindEvents();
+      hydrate();
+      setInterval(() => {
+        updateTimer();
+        updateStats();
+      }, 1000);
+    </script>
+  </body>
+</html>
