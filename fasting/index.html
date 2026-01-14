@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="bbpfast" />
+    <link rel="manifest" href="site.webmanifest" />
+    <title>Intermittent Fast</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #1b1a19;
+        --muted: #6e6a64;
+        --paper: #fbf7f1;
+        --accent: #ed6a4d;
+        --accent-dark: #c7543f;
+        --accent-soft: #f6b9a7;
+        --leaf: #4f7b6a;
+        --card: rgba(255, 255, 255, 0.8);
+        --shadow: 0 24px 50px rgba(40, 33, 25, 0.15);
+        --radius: 22px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 20% 10%, #fff7ea 0%, transparent 55%),
+          radial-gradient(circle at 80% 20%, #fde9df 0%, transparent 50%),
+          radial-gradient(circle at 50% 90%, #f3f0ea 0%, transparent 65%),
+          linear-gradient(160deg, #f9f2e7 0%, #f6ede2 45%, #f7f4ee 100%);
+        padding: 24px 18px 40px;
+      }
+
+      .app {
+        max-width: 460px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 12px;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: "Iowan Old Style", "Charter", "Palatino", "Georgia", serif;
+        font-size: 26px;
+        letter-spacing: 0.5px;
+      }
+
+      .cycle-window {
+        text-align: right;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(8px);
+      }
+
+      .timer {
+        display: grid;
+        gap: 8px;
+        text-align: center;
+      }
+
+      .timer .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--muted);
+      }
+
+      .timer .time {
+        font-family: "Iowan Old Style", "Charter", "Palatino", "Georgia", serif;
+        font-size: 42px;
+      }
+
+      .timer .sub {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .primary-action {
+        width: 100%;
+        border: none;
+        border-radius: 999px;
+        padding: 18px 24px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(140deg, var(--accent) 0%, var(--accent-dark) 100%);
+        box-shadow: 0 14px 28px rgba(237, 106, 77, 0.35);
+        cursor: pointer;
+      }
+
+      .primary-action:active {
+        transform: translateY(1px) scale(0.99);
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .secondary {
+        border: 1px solid rgba(27, 26, 25, 0.1);
+        border-radius: 14px;
+        padding: 12px;
+        background: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .secondary.success {
+        color: #2d6b45;
+        border-color: rgba(45, 107, 69, 0.25);
+      }
+
+      .secondary.fail {
+        color: #a13a2a;
+        border-color: rgba(161, 58, 42, 0.25);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        text-align: center;
+      }
+
+      .stat {
+        padding: 12px 6px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .stat .value {
+        font-family: "Iowan Old Style", "Charter", "Palatino", "Georgia", serif;
+        font-size: 22px;
+        font-weight: 600;
+      }
+
+      .stat .key {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+      }
+
+      .settings {
+        display: grid;
+        gap: 12px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      label {
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      input[type="number"] {
+        border: 1px solid rgba(27, 26, 25, 0.1);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 16px;
+        background: #fff;
+      }
+
+      input[type="date"],
+      select {
+        border: 1px solid rgba(27, 26, 25, 0.1);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 16px;
+        background: #fff;
+      }
+
+      .time-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .button-row .secondary {
+        flex: 1 1 auto;
+      }
+
+      .inline-meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .history {
+        display: grid;
+        gap: 12px;
+      }
+
+      .history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .history-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .manual-form {
+        display: grid;
+        gap: 10px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .ghost {
+        border: 1px solid rgba(27, 26, 25, 0.15);
+        background: transparent;
+        color: var(--leaf);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        padding: 6px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      .history-item {
+        border-radius: 16px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.7);
+        display: grid;
+        gap: 4px;
+        border-left: 6px solid transparent;
+        position: relative;
+      }
+
+      .history-item.success {
+        border-left-color: #2d6b45;
+      }
+
+      .history-item.fail {
+        border-left-color: #a13a2a;
+      }
+
+      .history-item .title {
+        font-weight: 600;
+      }
+
+      .history-item .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .history-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .history-controls input[type="checkbox"] {
+        accent-color: var(--leaf);
+        width: 16px;
+        height: 16px;
+      }
+
+      .history-item .delete {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border: none;
+        background: rgba(27, 26, 25, 0.08);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 11px;
+        cursor: pointer;
+      }
+
+      .reset-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .reset-row button {
+        border: none;
+        background: none;
+        color: var(--leaf);
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      @media (min-width: 540px) {
+        body {
+          padding: 32px 28px 50px;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div>
+          <h1>Intermittent Fast</h1>
+          <div class="cycle-window" id="scheduleLabel">16:8 schedule</div>
+        </div>
+        <div class="cycle-window" id="cycleWindow">Cycle not started</div>
+      </header>
+
+      <section class="card timer">
+        <div class="label" id="modeLabel">Eating</div>
+        <div class="time" id="timerValue">--:--:--</div>
+        <div class="sub" id="timerSub">Tap start to begin your next fast.</div>
+        <button class="primary-action" id="primaryAction">Start Fast</button>
+      </section>
+
+      <section class="card stats">
+        <div class="stat">
+          <div class="value" id="statDone">0</div>
+          <div class="key">Done</div>
+        </div>
+        <div class="stat">
+          <div class="value" id="statRemaining">0</div>
+          <div class="key">Remaining</div>
+        </div>
+        <div class="stat">
+          <div class="value" id="statCycle">0</div>
+          <div class="key">Days Left</div>
+        </div>
+      </section>
+
+      <section class="card settings">
+        <div class="field">
+          <label for="cycleLength">Cycle length (days)</label>
+          <input type="number" id="cycleLength" min="1" step="1" />
+        </div>
+        <div class="field">
+          <label for="requiredPeriods">Fasts required per cycle</label>
+          <input type="number" id="requiredPeriods" min="1" step="1" />
+        </div>
+        <div class="field">
+          <label for="fastHours">Fasting duration (hours)</label>
+          <input type="number" id="fastHours" min="1" step="1" />
+        </div>
+        <div class="reset-row">
+          <span id="cycleStartLabel">Cycle start not set</span>
+          <button id="resetCycle">Start new cycle</button>
+        </div>
+      </section>
+
+      <section class="card planning">
+        <div class="label">Schedule</div>
+        <div class="field">
+          <label for="scheduleDate">Schedule next fast date</label>
+          <input type="date" id="scheduleDate" />
+        </div>
+        <div class="field">
+          <label>Schedule next fast time</label>
+          <div class="time-picker">
+            <select id="scheduleHour">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+            <select id="scheduleMinute">
+              <option value="00">00</option>
+              <option value="30">30</option>
+            </select>
+            <select id="scheduleMeridiem">
+              <option value="AM">AM</option>
+              <option value="PM">PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="button-row">
+          <button class="secondary" id="scheduleButton" type="button">Schedule</button>
+          <button class="secondary" id="clearSchedule" type="button">Clear</button>
+        </div>
+        <div class="inline-meta" id="scheduleStatus">No fast scheduled.</div>
+      </section>
+
+      <section class="card history">
+        <div class="history-header">
+          <div class="label">History</div>
+          <div class="history-actions">
+            <button class="ghost" id="toggleManual" type="button">Add Fast</button>
+          </div>
+        </div>
+        <div class="manual-form hidden" id="manualForm">
+          <div class="field">
+            <label for="manualStartDate">Manual fast start date</label>
+            <input type="date" id="manualStartDate" />
+          </div>
+          <div class="field">
+            <label>Manual fast start time</label>
+            <div class="time-picker">
+              <select id="manualStartHour">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <select id="manualStartMinute">
+                <option value="00">00</option>
+                <option value="30">30</option>
+              </select>
+              <select id="manualStartMeridiem">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="manualEndDate">Manual fast end date</label>
+            <input type="date" id="manualEndDate" />
+          </div>
+          <div class="field">
+            <label>Manual fast end time</label>
+            <div class="time-picker">
+              <select id="manualEndHour">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <select id="manualEndMinute">
+                <option value="00">00</option>
+                <option value="30">30</option>
+              </select>
+              <select id="manualEndMeridiem">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="manualResult">Result</label>
+            <select id="manualResult">
+              <option value="success">Successful</option>
+              <option value="fail">Unsuccessful</option>
+            </select>
+          </div>
+          <button class="secondary" id="addManual" type="button">Add fast</button>
+        </div>
+        <div id="historyList"></div>
+      </section>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "ifast.v1";
+      const $ = (id) => document.getElementById(id);
+
+      const state = loadState();
+      const els = {
+        scheduleLabel: $("scheduleLabel"),
+        cycleWindow: $("cycleWindow"),
+        modeLabel: $("modeLabel"),
+        timerValue: $("timerValue"),
+        timerSub: $("timerSub"),
+        primaryAction: $("primaryAction"),
+        statDone: $("statDone"),
+        statRemaining: $("statRemaining"),
+        statCycle: $("statCycle"),
+        cycleLength: $("cycleLength"),
+        requiredPeriods: $("requiredPeriods"),
+        fastHours: $("fastHours"),
+        cycleStartLabel: $("cycleStartLabel"),
+        resetCycle: $("resetCycle"),
+        scheduleDate: $("scheduleDate"),
+        scheduleHour: $("scheduleHour"),
+        scheduleMinute: $("scheduleMinute"),
+        scheduleMeridiem: $("scheduleMeridiem"),
+        scheduleButton: $("scheduleButton"),
+        clearSchedule: $("clearSchedule"),
+        scheduleStatus: $("scheduleStatus"),
+        toggleManual: $("toggleManual"),
+        manualForm: $("manualForm"),
+        manualStartDate: $("manualStartDate"),
+        manualStartHour: $("manualStartHour"),
+        manualStartMinute: $("manualStartMinute"),
+        manualStartMeridiem: $("manualStartMeridiem"),
+        manualEndDate: $("manualEndDate"),
+        manualEndHour: $("manualEndHour"),
+        manualEndMinute: $("manualEndMinute"),
+        manualEndMeridiem: $("manualEndMeridiem"),
+        manualResult: $("manualResult"),
+        addManual: $("addManual"),
+        historyList: $("historyList"),
+      };
+
+      function loadState() {
+        const fallback = {
+          settings: { cycleLengthDays: 14, requiredPerCycle: 6, fastHours: 16 },
+          cycleStart: null,
+          current: { mode: "eating", start: null, end: null },
+          pending: null,
+          scheduled: null,
+          history: [],
+        };
+        try {
+          const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          return { ...fallback, ...stored };
+        } catch (error) {
+          return fallback;
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function toMsHours(hours) {
+        return hours * 60 * 60 * 1000;
+      }
+
+      function formatDuration(ms) {
+        const total = Math.max(0, Math.floor(ms / 1000));
+        const hours = String(Math.floor(total / 3600)).padStart(2, "0");
+        const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+        const seconds = String(total % 60).padStart(2, "0");
+        return `${hours}:${minutes}:${seconds}`;
+      }
+
+      function formatDate(ms) {
+        const date = new Date(ms);
+        return date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      }
+
+      function pad2(value) {
+        return String(value).padStart(2, "0");
+      }
+
+      function setTimePickerValues(date, hourEl, minuteEl, meridiemEl) {
+        const hour24 = date.getHours();
+        const meridiem = hour24 >= 12 ? "PM" : "AM";
+        const hour12 = hour24 % 12 || 12;
+        const minute = date.getMinutes() >= 30 ? "30" : "00";
+        hourEl.value = String(hour12);
+        minuteEl.value = minute;
+        meridiemEl.value = meridiem;
+      }
+
+      function parseDateTime(dateValue, hourValue, minuteValue, meridiemValue) {
+        if (!dateValue) return Number.NaN;
+        const hour12 = Number(hourValue);
+        if (!Number.isFinite(hour12)) return Number.NaN;
+        let hour24 = hour12 % 12;
+        if (meridiemValue === "PM") hour24 += 12;
+        return Date.parse(`${dateValue}T${pad2(hour24)}:${minuteValue}`);
+      }
+
+      function eatingHours() {
+        return Math.max(1, 24 - Number(state.settings.fastHours || 16));
+      }
+
+      function cycleWindow() {
+        if (!state.cycleStart) return null;
+        const lengthMs = toMsHours(Number(state.settings.cycleLengthDays) * 24);
+        return { start: state.cycleStart, end: state.cycleStart + lengthMs };
+      }
+
+      function updateStats() {
+        const window = cycleWindow();
+        const now = Date.now();
+        let successCount = 0;
+        let daysLeft = Number(state.settings.cycleLengthDays);
+        if (window) {
+          successCount = state.history.filter((item) => {
+            return item.result === "success" && item.end >= window.start && item.end <= window.end;
+          }).length;
+          daysLeft = Math.max(0, Math.ceil((window.end - now) / toMsHours(24)));
+        }
+        const remaining = Math.max(0, Number(state.settings.requiredPerCycle) - successCount);
+        els.statDone.textContent = successCount;
+        els.statRemaining.textContent = remaining;
+        els.statCycle.textContent = daysLeft;
+      }
+
+      function updateCycleLabels() {
+        const schedule = `${state.settings.fastHours}:${eatingHours()}`;
+        els.scheduleLabel.textContent = `${schedule} schedule`;
+        const window = cycleWindow();
+        if (!window) {
+          els.cycleWindow.textContent = "Cycle not started";
+          els.cycleStartLabel.textContent = "Cycle start not set";
+          return;
+        }
+        els.cycleWindow.textContent = `${formatDate(window.start)} → ${formatDate(window.end)}`;
+        els.cycleStartLabel.textContent = `Started ${formatDate(window.start)}`;
+      }
+
+      function updateTimer() {
+        const now = Date.now();
+        const current = state.current || { mode: "eating", start: null, end: null };
+        if (current.mode === "fasting") {
+          const remaining = current.end - now;
+          els.modeLabel.textContent = "Fasting";
+          els.timerValue.textContent = formatDuration(remaining);
+          els.timerSub.textContent = remaining >= 0 ? "Time left in this fast." : "Fast target passed. End when ready.";
+          els.primaryAction.textContent = "End Fast";
+        } else {
+          if (state.scheduled && now < state.scheduled.start) {
+            const untilStart = state.scheduled.start - now;
+            els.modeLabel.textContent = "Scheduled";
+            els.timerValue.textContent = formatDuration(untilStart);
+            els.timerSub.textContent = `Starts at ${formatDate(state.scheduled.start)}.`;
+            els.primaryAction.textContent = "Start Now";
+            return;
+          }
+          const eatingEnd = current.end || (state.history[0]?.end ? state.history[0].end + toMsHours(eatingHours()) : null);
+          const remaining = eatingEnd ? eatingEnd - now : 0;
+          els.modeLabel.textContent = "Eating";
+          els.timerValue.textContent = eatingEnd ? formatDuration(remaining) : "--:--:--";
+          els.timerSub.textContent = eatingEnd ? "Time left in eating window." : "Tap start to begin your next fast.";
+          els.primaryAction.textContent = "Start Fast";
+        }
+      }
+
+      function updateHistory() {
+        els.historyList.innerHTML = "";
+        if (!state.history.length) {
+          els.historyList.innerHTML = "<div class='meta'>No completed fasts yet.</div>";
+          return;
+        }
+        state.history.slice().reverse().forEach((item, index) => {
+          const originalIndex = state.history.length - 1 - index;
+          const wrap = document.createElement("div");
+          const result = item.result === "fail" ? "fail" : "success";
+          wrap.className = `history-item ${result === "success" ? "success" : "fail"}`;
+          const targetHours = Number.isFinite(item.targetHours) ? item.targetHours : Number(state.settings.fastHours);
+          const durationHours = ((item.end - item.start) / toMsHours(1)).toFixed(1);
+          wrap.innerHTML = `
+            <div class="title">${result === "success" ? "Successful" : "Unsuccessful"} fast</div>
+            <div class="meta">${formatDate(item.start)} → ${formatDate(item.end)}</div>
+            <div class="meta">${durationHours}h fast · ${targetHours}:${24 - targetHours} schedule</div>
+            <label class="history-controls">
+              <input class="result-toggle" type="checkbox" data-index="${originalIndex}" ${result === "success" ? "checked" : ""} />
+              Successful
+            </label>
+            <button class="delete" type="button" data-index="${originalIndex}">Delete</button>
+          `;
+          els.historyList.appendChild(wrap);
+        });
+      }
+
+      function applySettings() {
+        state.settings.cycleLengthDays = Number(els.cycleLength.value) || 14;
+        state.settings.requiredPerCycle = Number(els.requiredPeriods.value) || 6;
+        state.settings.fastHours = Number(els.fastHours.value) || 16;
+        saveState();
+        updateCycleLabels();
+        updateStats();
+        updateTimer();
+        updateHistory();
+      }
+
+      function startFastAt(startMs) {
+        if (!state.cycleStart) state.cycleStart = startMs;
+        state.pending = null;
+        state.current = {
+          mode: "fasting",
+          start: startMs,
+          end: startMs + toMsHours(state.settings.fastHours),
+        };
+        state.scheduled = null;
+        saveState();
+        updateCycleLabels();
+        updateTimer();
+      }
+
+      function startFast() {
+        startFastAt(Date.now());
+      }
+
+      function endFast() {
+        if (!state.current || state.current.mode !== "fasting") return;
+        const now = Date.now();
+        state.history.push({
+          start: state.current.start,
+          end: now,
+          targetHours: Number(state.settings.fastHours),
+          result: "success",
+        });
+        state.current = { mode: "eating", start: now, end: now + toMsHours(eatingHours()) };
+        saveState();
+        updateStats();
+        updateHistory();
+        updateTimer();
+      }
+
+      function updateScheduleStatus() {
+        if (!state.scheduled) {
+          els.scheduleStatus.textContent = "No fast scheduled.";
+          return;
+        }
+        const now = Date.now();
+        if (state.scheduled.start > now) {
+          els.scheduleStatus.textContent = `Scheduled for ${formatDate(state.scheduled.start)}.`;
+        } else {
+          els.scheduleStatus.textContent = "Scheduled fast ready to start.";
+        }
+      }
+
+      function scheduleFast(startMs) {
+        if (!Number.isFinite(startMs)) return;
+        state.scheduled = { start: startMs, targetHours: Number(state.settings.fastHours) };
+        saveState();
+        updateScheduleStatus();
+        checkSchedule();
+        updateTimer();
+      }
+
+      function clearSchedule() {
+        state.scheduled = null;
+        saveState();
+        updateScheduleStatus();
+        updateTimer();
+      }
+
+      function checkSchedule() {
+        if (!state.scheduled || (state.current && state.current.mode === "fasting")) return;
+        if (Date.now() >= state.scheduled.start) {
+          startFastAt(state.scheduled.start);
+          updateScheduleStatus();
+        }
+      }
+
+      function addManualFast() {
+        const startMs = parseDateTime(
+          els.manualStartDate.value,
+          els.manualStartHour.value,
+          els.manualStartMinute.value,
+          els.manualStartMeridiem.value
+        );
+        const endMs = parseDateTime(
+          els.manualEndDate.value,
+          els.manualEndHour.value,
+          els.manualEndMinute.value,
+          els.manualEndMeridiem.value
+        );
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return;
+        if (!state.cycleStart) state.cycleStart = startMs;
+        const targetHours = Number(state.settings.fastHours);
+        const result = els.manualResult.value === "fail" ? "fail" : "success";
+        state.history.push({ start: startMs, end: endMs, targetHours, result });
+        saveState();
+        updateCycleLabels();
+        updateStats();
+        updateHistory();
+        updateTimer();
+        els.manualStartDate.value = "";
+        els.manualEndDate.value = "";
+        els.manualForm.classList.add("hidden");
+        els.toggleManual.textContent = "Add Fast";
+      }
+
+      function bindEvents() {
+        els.primaryAction.addEventListener("click", () => {
+          if (state.current.mode === "fasting") return endFast();
+          if (state.scheduled && Date.now() < state.scheduled.start) {
+            clearSchedule();
+          }
+          return startFast();
+        });
+        [els.cycleLength, els.requiredPeriods, els.fastHours].forEach((input) => {
+          input.addEventListener("change", applySettings);
+        });
+        els.resetCycle.addEventListener("click", () => {
+          state.cycleStart = Date.now();
+          saveState();
+          updateCycleLabels();
+          updateStats();
+        });
+        els.scheduleButton.addEventListener("click", () => {
+          const startMs = parseDateTime(
+            els.scheduleDate.value,
+            els.scheduleHour.value,
+            els.scheduleMinute.value,
+            els.scheduleMeridiem.value
+          );
+          if (!Number.isFinite(startMs)) return;
+          scheduleFast(startMs);
+        });
+        els.clearSchedule.addEventListener("click", clearSchedule);
+        els.addManual.addEventListener("click", addManualFast);
+        els.toggleManual.addEventListener("click", () => {
+          els.manualForm.classList.toggle("hidden");
+          els.toggleManual.textContent = els.manualForm.classList.contains("hidden") ? "Add Fast" : "Close";
+        });
+        els.historyList.addEventListener("click", (event) => {
+          const target = event.target.closest(".delete");
+          if (!target) return;
+          const index = Number(target.dataset.index);
+          if (Number.isNaN(index)) return;
+          state.history.splice(index, 1);
+          saveState();
+          updateStats();
+          updateHistory();
+          updateTimer();
+        });
+        els.historyList.addEventListener("change", (event) => {
+          const target = event.target;
+          if (!target.classList.contains("result-toggle")) return;
+          const index = Number(target.dataset.index);
+          if (Number.isNaN(index) || !state.history[index]) return;
+          state.history[index].result = target.checked ? "success" : "fail";
+          saveState();
+          updateStats();
+          updateHistory();
+        });
+      }
+
+      function hydrate() {
+        els.manualForm.classList.add("hidden");
+        els.toggleManual.textContent = "Add Fast";
+        if (state.pending) {
+          state.history.push({
+            start: state.pending.start,
+            end: state.pending.end,
+            targetHours: Number(state.pending.targetHours) || Number(state.settings.fastHours),
+            result: state.pending.result === "fail" ? "fail" : "success",
+          });
+          state.pending = null;
+          saveState();
+        }
+        const today = new Date();
+        const todayValue = today.toISOString().slice(0, 10);
+        if (!els.scheduleDate.value) els.scheduleDate.value = todayValue;
+        if (!els.manualStartDate.value) els.manualStartDate.value = todayValue;
+        if (!els.manualEndDate.value) els.manualEndDate.value = todayValue;
+        setTimePickerValues(today, els.scheduleHour, els.scheduleMinute, els.scheduleMeridiem);
+        setTimePickerValues(today, els.manualStartHour, els.manualStartMinute, els.manualStartMeridiem);
+        setTimePickerValues(today, els.manualEndHour, els.manualEndMinute, els.manualEndMeridiem);
+        els.cycleLength.value = state.settings.cycleLengthDays;
+        els.requiredPeriods.value = state.settings.requiredPerCycle;
+        els.fastHours.value = state.settings.fastHours;
+        updateCycleLabels();
+        checkSchedule();
+        updateScheduleStatus();
+        updateStats();
+        updateHistory();
+        updateTimer();
+      }
+
+      bindEvents();
+      hydrate();
+      setInterval(() => {
+        checkSchedule();
+        updateTimer();
+        updateStats();
+      }, 1000);
+    </script>
+  </body>
+</html>
